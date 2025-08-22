@@ -1,6 +1,7 @@
 package com.example.triviabackend.services;
 
 import com.example.triviabackend.models.questions.UnAnsweredQuestion;
+import com.example.triviabackend.services.interfaces.QuestionService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

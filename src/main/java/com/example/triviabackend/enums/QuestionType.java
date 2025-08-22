@@ -1,4 +1,4 @@
-package com.example.triviabackend.models.questions;
+package com.example.triviabackend.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

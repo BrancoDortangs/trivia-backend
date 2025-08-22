@@ -1,4 +1,4 @@
-package com.example.triviabackend.services;
+package com.example.triviabackend.services.interfaces;
 
 import com.example.triviabackend.models.questions.UnAnsweredQuestion;
 

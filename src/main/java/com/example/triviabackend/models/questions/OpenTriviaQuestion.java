@@ -1,5 +1,6 @@
 package com.example.triviabackend.models.questions;
 
+import com.example.triviabackend.enums.QuestionType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;

@@ -3,6 +3,7 @@ package com.example.triviabackend.services;
 import com.example.triviabackend.models.answers.*;
 import com.example.triviabackend.models.answers.BooleanValidatedAnswer;
 import com.example.triviabackend.models.answers.SingleChoiceValidatedAnswer;
+import com.example.triviabackend.models.answers.SubmittedAnswer;
 import com.example.triviabackend.models.answers.ValidatedAnswer;
 import com.example.triviabackend.models.questions.Question;
 import org.springframework.stereotype.Service;

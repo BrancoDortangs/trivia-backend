@@ -4,9 +4,9 @@ import com.example.triviabackend.models.answers.BooleanSubmittedAnswer;
 import com.example.triviabackend.models.answers.SingleChoiceSubmittedAnswer;
 import com.example.triviabackend.models.dto.AnswerDTO;
 import com.example.triviabackend.models.questions.Question;
-import com.example.triviabackend.models.questions.QuestionType;
+import com.example.triviabackend.enums.QuestionType;
 import com.example.triviabackend.services.QuestionCache;
-import com.example.triviabackend.services.QuestionService;
+import com.example.triviabackend.services.interfaces.QuestionService;
 import com.example.triviabackend.models.answers.SubmittedAnswer;
 import com.example.triviabackend.models.questions.UnAnsweredQuestion;
 import com.example.triviabackend.models.answers.ValidatedAnswer;
@@ -49,9 +49,9 @@ public class TriviaController {
                     Question question = questionCache.getQuestion(answer.id());
                     if (question.type() == QuestionType.BOOLEAN) {
                         return new BooleanSubmittedAnswer(answer.id(), Boolean.parseBoolean(answer.answer()));
-                    } else {
-                        return new SingleChoiceSubmittedAnswer(answer.id(), answer.answer());
                     }
+
+                    return new SingleChoiceSubmittedAnswer(answer.id(), answer.answer());
                 })
                 .toList();
 

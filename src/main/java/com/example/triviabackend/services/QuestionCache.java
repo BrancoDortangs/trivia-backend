@@ -3,6 +3,7 @@ package com.example.triviabackend.services;
 import com.example.triviabackend.models.questions.OpenTriviaResponse;
 import com.example.triviabackend.models.questions.Question;
 import com.example.triviabackend.models.questions.UnAnsweredQuestion;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.HtmlUtils;
@@ -15,8 +16,12 @@ public class QuestionCache {
     private final QuestionSessionService questionSessionService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final Map<String, Question> questionPerId = new ConcurrentHashMap<>();
-    private static final String API_URL = "https://opentdb.com/api.php";
-    private static final int DEFAULT_AMOUNT = 10;
+
+    @Value("${trivia.open-trivia-api-url}")
+    private String API_URL;
+
+    @Value("${trivia.default-amount}")
+    private int DEFAULT_AMOUNT;
 
     public QuestionCache(QuestionSessionService questionSessionService) {
         this.questionSessionService = questionSessionService;
