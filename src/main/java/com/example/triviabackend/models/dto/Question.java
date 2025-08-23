@@ -1,4 +1,4 @@
-package com.example.triviabackend.models.questions;
+package com.example.triviabackend.models.dto;
 
 import com.example.triviabackend.enums.QuestionType;
 

@@ -1,8 +1,10 @@
 package com.example.triviabackend.models.answers;
 
-public sealed interface ValidatedAnswer<AnswerType> extends SubmittedAnswer<AnswerType>
-        permits BooleanValidatedAnswer, SingleChoiceValidatedAnswer {
-    AnswerType correctAnswer();
+public sealed interface ValidatedAnswer<T> extends SubmittedAnswer<T>
+        permits BooleanValidatedAnswer, MultipleChoiceValidatedAnswer {
+    T correctAnswer();
 
-    boolean isCorrect();
+    default boolean isCorrect() {
+        return answer().equals(correctAnswer());
+    }
 }

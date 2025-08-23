@@ -2,10 +2,10 @@ package com.example.triviabackend.services;
 
 import com.example.triviabackend.models.answers.*;
 import com.example.triviabackend.models.answers.BooleanValidatedAnswer;
-import com.example.triviabackend.models.answers.SingleChoiceValidatedAnswer;
+import com.example.triviabackend.models.answers.MultipleChoiceValidatedAnswer;
 import com.example.triviabackend.models.answers.SubmittedAnswer;
 import com.example.triviabackend.models.answers.ValidatedAnswer;
-import com.example.triviabackend.models.questions.Question;
+import com.example.triviabackend.models.dto.Question;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,27 +24,18 @@ public class AnswerService {
                 .map(submittedAnswer -> {
                     Question question = questionCache.getQuestion(submittedAnswer.id());
 
-                    if (submittedAnswer instanceof SingleChoiceSubmittedAnswer singleChoiceAnswer) {
-                        boolean isCorrect = singleChoiceAnswer.answer().equals(question.correctAnswer());
+                    return switch (submittedAnswer) {
+                        case MultipleChoiceSubmittedAnswer singleChoiceAnswer:
+                            yield new MultipleChoiceValidatedAnswer(question.id(), singleChoiceAnswer.answer(), question.correctAnswer());
 
-                        return (ValidatedAnswer<?>) new SingleChoiceValidatedAnswer(
-                                question.id(),
-                                singleChoiceAnswer.answer(),
-                                question.correctAnswer(),
-                                isCorrect
-                        );
-                    } else if (submittedAnswer instanceof BooleanSubmittedAnswer booleanAnswer) {
-                        boolean correctAnswer = Boolean.parseBoolean(question.correctAnswer());
-                        boolean isCorrect = booleanAnswer.answer() == correctAnswer;
+                        case BooleanValidatedAnswer booleanAnswer:
+                            boolean correctAnswer = Boolean.parseBoolean(question.correctAnswer());
 
-                        return (ValidatedAnswer<?>) new BooleanValidatedAnswer(
-                                question.id(),
-                                booleanAnswer.answer(),
-                                correctAnswer,
-                                isCorrect
-                        );
-                    }
-                    return null;
+                            yield (ValidatedAnswer<?>) new BooleanValidatedAnswer(question.id(), booleanAnswer.answer(), correctAnswer);
+
+                        default:
+                            yield null;
+                    };
                 })
                 .filter(Objects::nonNull)
                 .toList();

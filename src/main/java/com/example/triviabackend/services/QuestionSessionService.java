@@ -9,19 +9,31 @@ import java.util.concurrent.ConcurrentHashMap;
 public class QuestionSessionService {
     private final Map<String, List<String>> askedQuestionIdsPerSessionId = new ConcurrentHashMap<>();
 
-    public Map<String, String> createSessionId() {
+    public String createSessionId() {
         String sessionId = UUID.randomUUID().toString();
 
         askedQuestionIdsPerSessionId.put(sessionId, new ArrayList<>());
 
-        return Collections.singletonMap("sessionId", sessionId);
+        return sessionId;
+    }
+
+    public boolean sessionExists(String sessionId) {
+        return askedQuestionIdsPerSessionId.containsKey(sessionId);
     }
 
     public List<String> getAskedQuestionIds(String sessionId) {
-        return askedQuestionIdsPerSessionId.getOrDefault(sessionId, new ArrayList<>());
+        if (!sessionExists(sessionId)) {
+            throw new IllegalArgumentException("Session does not exist " + sessionId);
+        }
+
+        return askedQuestionIdsPerSessionId.get(sessionId);
     }
 
     public void addAskedQuestionIds(String sessionId, List<String> questionIds) {
-        askedQuestionIdsPerSessionId.computeIfAbsent(sessionId, k -> new ArrayList<>()).addAll(questionIds);
+        if (!sessionExists(sessionId)) {
+            throw new IllegalArgumentException("Session does not exist " + sessionId);
+        }
+
+        askedQuestionIdsPerSessionId.get(sessionId).addAll(questionIds);
     }
 }

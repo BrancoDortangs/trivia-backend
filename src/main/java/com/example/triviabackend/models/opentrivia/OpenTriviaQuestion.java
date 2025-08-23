@@ -1,4 +1,4 @@
-package com.example.triviabackend.models.questions;
+package com.example.triviabackend.models.opentrivia;
 
 import com.example.triviabackend.enums.QuestionType;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,6 +26,26 @@ public class OpenTriviaQuestion {
         }
 
         return id;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        OpenTriviaQuestion that = (OpenTriviaQuestion) object;
+
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     public QuestionType getType() {

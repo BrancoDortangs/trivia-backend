@@ -1,8 +1,9 @@
 package com.example.triviabackend.services;
 
-import com.example.triviabackend.models.questions.OpenTriviaResponse;
-import com.example.triviabackend.models.questions.Question;
-import com.example.triviabackend.models.questions.UnAnsweredQuestion;
+import com.example.triviabackend.models.opentrivia.OpenTriviaQuestionResponse;
+import com.example.triviabackend.models.dto.Question;
+import com.example.triviabackend.models.dto.UnAnsweredQuestion;
+import com.example.triviabackend.services.interfaces.SessionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -10,77 +11,96 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionCache {
+    private static final int AMOUNT = 50;
+
+    private final String apiUrl;
     private final QuestionSessionService questionSessionService;
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final Map<String, Question> questionPerId = new ConcurrentHashMap<>();
+    private final SessionService sessionService;
+    private final RestTemplate restTemplate;
+    private final Map<String, Question> questionPerId;
 
-    @Value("${trivia.open-trivia-api-url}")
-    private String API_URL;
-
-    @Value("${trivia.default-amount}")
-    private int DEFAULT_AMOUNT;
-
-    public QuestionCache(QuestionSessionService questionSessionService) {
+    public QuestionCache(@Value("${trivia.open-trivia-api-url}") String apiUrl, QuestionSessionService questionSessionService, SessionService sessionService) {
+        this.apiUrl = apiUrl;
         this.questionSessionService = questionSessionService;
+        this.sessionService = sessionService;
+        this.restTemplate = new RestTemplate();
+        this.questionPerId = new ConcurrentHashMap<>();
+
+        addNewQuestions();
     }
 
     private void addNewQuestions() {
-        addNewQuestions(DEFAULT_AMOUNT);
-    }
+        String sessionId = sessionService.getSessionId();
 
-    private void addNewQuestions(int amount) {
-        String url = API_URL + "?amount=" + amount;
-
-        OpenTriviaResponse response = restTemplate.getForObject(url, OpenTriviaResponse.class);
-
-        if (response != null && response.getResults() != null) {
-            response.getResults().forEach(result -> {
-                List<String> decodedIncorrectAnswers = result.getIncorrectAnswers().stream()
-                        .map(HtmlUtils::htmlUnescape)
-                        .toList();
-
-                Question question = new Question(
-                        result.getId(),
-                        result.getType(),
-                        result.getDifficulty(),
-                        result.getCategory(),
-                        HtmlUtils.htmlUnescape(result.getQuestion()),
-                        HtmlUtils.htmlUnescape(result.getCorrectAnswer()),
-                        decodedIncorrectAnswers
-                );
-                questionPerId.put(question.id(), question);
-            });
+        if (sessionId == null) {
+            return;
         }
+
+        String url = apiUrl + "?amount=" + AMOUNT + "&token=" + sessionId;
+
+        OpenTriviaQuestionResponse response = restTemplate.getForObject(url, OpenTriviaQuestionResponse.class);
+
+        if (response == null || response.getResults() == null) {
+            return;
+        }
+
+        response.getResults().forEach(result -> {
+            List<String> decodedIncorrectAnswers = result.getIncorrectAnswers().stream()
+                    .map(HtmlUtils::htmlUnescape)
+                    .toList();
+
+            Question question = new Question(
+                    result.getId(),
+                    result.getType(),
+                    result.getDifficulty(),
+                    result.getCategory(),
+                    HtmlUtils.htmlUnescape(result.getQuestion()),
+                    HtmlUtils.htmlUnescape(result.getCorrectAnswer()),
+                    decodedIncorrectAnswers
+            );
+            questionPerId.put(question.id(), question);
+        });
     }
+
 
     public List<UnAnsweredQuestion> getQuestions(String sessionId, int limit) {
-        if (questionPerId.isEmpty()) {
-            addNewQuestions();
-        }
+        return getNotAskedQuestions(sessionId, limit);
+    }
 
-        return this.getNotAskedQuestions(sessionId, limit);
+    private List<String> getAvailableQuestionIds(List<String> askedQuestionIds) {
+        return questionPerId.values().stream()
+                .map(Question::id)
+                .filter(id -> !askedQuestionIds.contains(id))
+                .toList();
+    }
+
+    private List<Question> getAvailableQuestions(List<String> availableQuestionIds) {
+        List<Question> questions = availableQuestionIds.stream()
+                .map(questionPerId::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        Collections.shuffle(questions);
+
+        return questions;
     }
 
     private List<UnAnsweredQuestion> getNotAskedQuestions(String sessionId, int limit) {
         List<String> askedQuestionIds = questionSessionService.getAskedQuestionIds(sessionId);
 
-        List<Question> availableQuestions = new ArrayList<>(questionPerId.values());
-        availableQuestions.removeIf(availableQuestion -> askedQuestionIds.contains(availableQuestion.id()));
+        List<String> availableQuestionIds = getAvailableQuestionIds(askedQuestionIds);
 
-        if (availableQuestions.size() < limit) {
-            addNewQuestions(limit - availableQuestions.size());
-            availableQuestions = new ArrayList<>(questionPerId.values());
-            availableQuestions.removeIf(availableQuestion -> askedQuestionIds.contains(availableQuestion.id()));
+        while (availableQuestionIds.size() < limit) {
+            addNewQuestions();
+            availableQuestionIds = getAvailableQuestionIds(askedQuestionIds);
         }
 
-        Collections.shuffle(availableQuestions);
-
-        List<Question> selectedQuestions = availableQuestions.stream()
-                .limit(limit)
-                .toList();
+        List<Question> availableQuestions = getAvailableQuestions(availableQuestionIds);
+        List<Question> selectedQuestions = availableQuestions.subList(0, Math.min(availableQuestions.size(), limit));
 
         questionSessionService.addAskedQuestionIds(sessionId, selectedQuestions.stream()
                 .map(Question::id)

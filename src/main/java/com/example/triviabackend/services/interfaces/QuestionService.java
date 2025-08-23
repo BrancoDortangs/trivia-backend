@@ -1,6 +1,6 @@
 package com.example.triviabackend.services.interfaces;
 
-import com.example.triviabackend.models.questions.UnAnsweredQuestion;
+import com.example.triviabackend.models.dto.UnAnsweredQuestion;
 
 import java.util.List;
 
