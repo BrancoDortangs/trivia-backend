@@ -23,14 +23,12 @@ public class QuestionCache {
     private final RestTemplate restTemplate;
     private final Map<String, Question> questionPerId;
 
-    public QuestionCache(@Value("${trivia.open-trivia-api-url}") String apiUrl, QuestionSessionService questionSessionService, SessionService sessionService) {
+    public QuestionCache(@Value("${trivia.open-trivia-api-url}") String apiUrl, QuestionSessionService questionSessionService, SessionService sessionService, RestTemplate restTemplate) {
         this.apiUrl = apiUrl;
         this.questionSessionService = questionSessionService;
         this.sessionService = sessionService;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.questionPerId = new ConcurrentHashMap<>();
-
-        addNewQuestions();
     }
 
     private void addNewQuestions() {
@@ -67,10 +65,6 @@ public class QuestionCache {
     }
 
 
-    public List<UnAnsweredQuestion> getQuestions(String sessionId, int limit) {
-        return getNotAskedQuestions(sessionId, limit);
-    }
-
     private List<String> getAvailableQuestionIds(List<String> askedQuestionIds) {
         return questionPerId.values().stream()
                 .map(Question::id)
@@ -89,7 +83,7 @@ public class QuestionCache {
         return questions;
     }
 
-    private List<UnAnsweredQuestion> getNotAskedQuestions(String sessionId, int limit) {
+    public List<UnAnsweredQuestion> getNotAskedQuestions(String sessionId, int limit) {
         List<String> askedQuestionIds = questionSessionService.getAskedQuestionIds(sessionId);
 
         List<String> availableQuestionIds = getAvailableQuestionIds(askedQuestionIds);

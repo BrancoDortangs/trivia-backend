@@ -16,8 +16,8 @@ public class OpenTriviaSessionService implements SessionService {
 
     private String sessionId;
 
-    public OpenTriviaSessionService() {
-        this.restTemplate = new RestTemplate();
+    public OpenTriviaSessionService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @PostConstruct

@@ -16,6 +16,6 @@ public class OpenTriviaQuestionService implements QuestionService {
 
     @Override
     public List<UnAnsweredQuestion> getQuestions(String sessionId, int limit) {
-        return questionCache.getQuestions(sessionId, limit);
+        return questionCache.getNotAskedQuestions(sessionId, limit);
     }
 }

@@ -25,10 +25,10 @@ public class AnswerService {
                     Question question = questionCache.getQuestion(submittedAnswer.id());
 
                     return switch (submittedAnswer) {
-                        case MultipleChoiceSubmittedAnswer singleChoiceAnswer:
-                            yield new MultipleChoiceValidatedAnswer(question.id(), singleChoiceAnswer.answer(), question.correctAnswer());
+                        case MultipleChoiceSubmittedAnswer multipleChoiceAnswer:
+                            yield new MultipleChoiceValidatedAnswer(question.id(), multipleChoiceAnswer.answer(), question.correctAnswer());
 
-                        case BooleanValidatedAnswer booleanAnswer:
+                        case BooleanSubmittedAnswer booleanAnswer:
                             boolean correctAnswer = Boolean.parseBoolean(question.correctAnswer());
 
                             yield (ValidatedAnswer<?>) new BooleanValidatedAnswer(question.id(), booleanAnswer.answer(), correctAnswer);
