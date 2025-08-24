@@ -38,6 +38,7 @@ class AnswerServiceTests {
         assertEquals("1", validatedAnswer.id());
         assertTrue(validatedAnswer.answer());
         assertTrue(validatedAnswer.correctAnswer());
+        assertTrue(validatedAnswer.isCorrect());
     }
 
     @Test
@@ -56,6 +57,7 @@ class AnswerServiceTests {
         assertEquals("2", validatedAnswer.id());
         assertEquals("4", validatedAnswer.answer());
         assertEquals("4", validatedAnswer.correctAnswer());
+        assertTrue(validatedAnswer.isCorrect());
     }
 }
 
